@@ -1,0 +1,30 @@
+# .streamlit/config.toml
+# ============================================================
+# Enterprise Decision Intelligence Platform — Streamlit Config
+# ============================================================
+
+[theme]
+base            = "dark"
+primaryColor    = "#6366f1"
+backgroundColor = "#0d1117"
+secondaryBackgroundColor = "#0f172a"
+textColor       = "#e2e8f0"
+font            = "sans serif"
+
+[server]
+headless        = true
+port            = 8501
+enableCORS      = false
+enableXsrfProtection = true
+maxUploadSize   = 50
+
+[browser]
+gatherUsageStats = false
+serverAddress   = "localhost"
+
+[runner]
+magicEnabled    = false
+fastReruns      = true
+
+[logger]
+level           = "warning"

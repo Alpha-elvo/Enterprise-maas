@@ -1,0 +1,153 @@
+# .github/workflows/security.yml
+# ================================================================
+# Security Scanning — Enterprise Decision Intelligence Platform
+# Runs on: push to main, PRs, and weekly schedule
+# ================================================================
+
+name: Security
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main, develop]
+  schedule:
+    - cron: "0 2 * * 1"    # Weekly Monday 02:00 UTC
+  workflow_dispatch:
+
+jobs:
+  # ── Dependency vulnerability audit ────────────────────────────
+  dependency-audit:
+    name: Dependency Vulnerability Audit
+    runs-on: ubuntu-22.04
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+
+      - name: Install audit tools
+        run: pip install pip-audit safety
+
+      - name: pip-audit (PyPA vulnerability DB)
+        run: |
+          pip install -r requirements.txt
+          pip-audit --format=json --output=pip-audit-results.json || true
+          pip-audit --format=markdown
+
+      - name: safety check
+        run: |
+          safety check -r requirements.txt --full-report || true
+          safety check -r requirements_enterprise.txt --full-report || true
+
+      - name: Upload audit results
+        uses: actions/upload-artifact@v4
+        with:
+          name: dependency-audit
+          path: pip-audit-results.json
+        continue-on-error: true
+
+  # ── Static Application Security Testing (SAST) ────────────────
+  sast:
+    name: SAST — Bandit
+    runs-on: ubuntu-22.04
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install Bandit
+        run: pip install bandit[toml]
+
+      - name: Run Bandit
+        run: |
+          bandit -r . \
+            --exclude ./tests,./venv,./.venv \
+            --severity-level medium \
+            --confidence-level medium \
+            --format json \
+            --output bandit-results.json || true
+          bandit -r . \
+            --exclude ./tests,./venv,./.venv \
+            --severity-level high \
+            --confidence-level high
+
+      - name: Upload Bandit results
+        uses: actions/upload-artifact@v4
+        with:
+          name: bandit-sast
+          path: bandit-results.json
+        continue-on-error: true
+
+  # ── Secrets scanning ──────────────────────────────────────────
+  secrets-scan:
+    name: Secrets Scan — Gitleaks
+    runs-on: ubuntu-22.04
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0    # full history for secret detection
+
+      - name: Run Gitleaks
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITLEAKS_LICENSE: ${{ secrets.GITLEAKS_LICENSE }}  # Optional for org use
+
+  # ── Container image scanning ──────────────────────────────────
+  container-scan:
+    name: Container Image Scan — Trivy
+    runs-on: ubuntu-22.04
+    if: github.event_name == 'push'
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build image for scanning
+        run: docker build -t scan-target:local .
+
+      - name: Run Trivy vulnerability scanner
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: scan-target:local
+          format: sarif
+          output: trivy-results.sarif
+          severity: CRITICAL,HIGH
+
+      - name: Upload Trivy SARIF to GitHub Security tab
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: trivy-results.sarif
+        continue-on-error: true
+
+  # ── CodeQL analysis ───────────────────────────────────────────
+  codeql:
+    name: CodeQL Analysis
+    runs-on: ubuntu-22.04
+    permissions:
+      security-events: write
+      actions: read
+      contents: read
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@v3
+        with:
+          languages: python
+          queries: security-extended
+
+      - name: Perform CodeQL Analysis
+        uses: github/codeql-action/analyze@v3
+        with:
+          category: "/language:python"

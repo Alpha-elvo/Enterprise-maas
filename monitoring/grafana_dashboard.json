@@ -1,0 +1,254 @@
+{
+  "__inputs": [
+    {
+      "name": "DS_PROMETHEUS",
+      "label": "Prometheus",
+      "description": "Platform Prometheus datasource",
+      "type": "datasource",
+      "pluginId": "prometheus",
+      "pluginName": "Prometheus"
+    }
+  ],
+  "title": "Enterprise Decision Intelligence Platform",
+  "uid": "enterprise-decision-intelligence",
+  "version": 1,
+  "schemaVersion": 38,
+  "tags": ["enterprise", "decision-intelligence", "agentic"],
+  "timezone": "browser",
+  "refresh": "30s",
+  "time": { "from": "now-6h", "to": "now" },
+  "panels": [
+    {
+      "id": 1,
+      "title": "Total Pipeline Runs",
+      "type": "stat",
+      "gridPos": { "x": 0, "y": 0, "w": 4, "h": 4 },
+      "targets": [{
+        "expr": "sum(platform_runs_total)",
+        "legendFormat": "Runs"
+      }],
+      "options": {
+        "colorMode": "background",
+        "graphMode": "area",
+        "reduceOptions": { "calcs": ["lastNotNull"] }
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "thresholds" },
+          "thresholds": {
+            "steps": [
+              { "color": "blue", "value": 0 }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "id": 2,
+      "title": "Records Processed (24h)",
+      "type": "stat",
+      "gridPos": { "x": 4, "y": 0, "w": 4, "h": 4 },
+      "targets": [{
+        "expr": "sum(increase(platform_records_processed_total[24h]))",
+        "legendFormat": "Records"
+      }],
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "thresholds" },
+          "thresholds": {
+            "steps": [
+              { "color": "green", "value": 0 },
+              { "color": "yellow", "value": 100 },
+              { "color": "red", "value": 500 }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "id": 3,
+      "title": "Circuit Breaker State",
+      "type": "stat",
+      "gridPos": { "x": 8, "y": 0, "w": 4, "h": 4 },
+      "targets": [{
+        "expr": "platform_circuit_breaker_open",
+        "legendFormat": "State"
+      }],
+      "options": {
+        "colorMode": "background",
+        "reduceOptions": { "calcs": ["lastNotNull"] },
+        "mappings": [
+          { "type": "value", "options": { "0": { "text": "CLOSED", "color": "green" }, "1": { "text": "OPEN", "color": "red" } } }
+        ]
+      }
+    },
+    {
+      "id": 4,
+      "title": "Cache Hit Rate",
+      "type": "gauge",
+      "gridPos": { "x": 12, "y": 0, "w": 4, "h": 4 },
+      "targets": [{
+        "expr": "platform_cache_hit_rate * 100",
+        "legendFormat": "Hit Rate %"
+      }],
+      "fieldConfig": {
+        "defaults": {
+          "min": 0, "max": 100,
+          "unit": "percent",
+          "thresholds": {
+            "steps": [
+              { "color": "red", "value": 0 },
+              { "color": "yellow", "value": 50 },
+              { "color": "green", "value": 80 }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "id": 5,
+      "title": "Active Sessions",
+      "type": "stat",
+      "gridPos": { "x": 16, "y": 0, "w": 4, "h": 4 },
+      "targets": [{
+        "expr": "sum(platform_active_sessions)",
+        "legendFormat": "Sessions"
+      }]
+    },
+    {
+      "id": 6,
+      "title": "Pending Workflow Reviews",
+      "type": "stat",
+      "gridPos": { "x": 20, "y": 0, "w": 4, "h": 4 },
+      "targets": [{
+        "expr": "sum(platform_pending_workflows)",
+        "legendFormat": "Pending"
+      }],
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "thresholds" },
+          "thresholds": {
+            "steps": [
+              { "color": "green", "value": 0 },
+              { "color": "yellow", "value": 5 },
+              { "color": "red", "value": 20 }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "id": 7,
+      "title": "Pipeline Run Duration (p95)",
+      "type": "timeseries",
+      "gridPos": { "x": 0, "y": 4, "w": 12, "h": 8 },
+      "targets": [{
+        "expr": "histogram_quantile(0.95, sum(rate(platform_run_duration_seconds_bucket[5m])) by (le, tenant_id))",
+        "legendFormat": "p95 {{tenant_id}}"
+      }],
+      "fieldConfig": {
+        "defaults": { "unit": "s", "color": { "mode": "palette-classic" } }
+      }
+    },
+    {
+      "id": 8,
+      "title": "Agent Execution Duration (p95 by Agent)",
+      "type": "timeseries",
+      "gridPos": { "x": 12, "y": 4, "w": 12, "h": 8 },
+      "targets": [{
+        "expr": "histogram_quantile(0.95, sum(rate(platform_agent_duration_seconds_bucket[5m])) by (le, agent_name))",
+        "legendFormat": "{{agent_name}}"
+      }],
+      "fieldConfig": {
+        "defaults": { "unit": "s" }
+      }
+    },
+    {
+      "id": 9,
+      "title": "Records by Domain (24h)",
+      "type": "piechart",
+      "gridPos": { "x": 0, "y": 12, "w": 8, "h": 8 },
+      "targets": [{
+        "expr": "sum(increase(platform_records_processed_total[24h])) by (domain)",
+        "legendFormat": "{{domain}}"
+      }]
+    },
+    {
+      "id": 10,
+      "title": "Impact Score Distribution",
+      "type": "histogram",
+      "gridPos": { "x": 8, "y": 12, "w": 8, "h": 8 },
+      "targets": [{
+        "expr": "sum(rate(platform_impact_score_bucket[1h])) by (le)",
+        "legendFormat": "Score"
+      }]
+    },
+    {
+      "id": 11,
+      "title": "Token Consumption Rate",
+      "type": "timeseries",
+      "gridPos": { "x": 16, "y": 12, "w": 8, "h": 8 },
+      "targets": [{
+        "expr": "rate(platform_tokens_consumed_total[5m]) * 60",
+        "legendFormat": "tokens/min {{tenant_id}}"
+      }],
+      "fieldConfig": {
+        "defaults": { "unit": "short" }
+      }
+    },
+    {
+      "id": 12,
+      "title": "API Error Rate",
+      "type": "timeseries",
+      "gridPos": { "x": 0, "y": 20, "w": 12, "h": 6 },
+      "targets": [{
+        "expr": "sum(rate(platform_api_requests_total{status_code=~'5..'}[5m])) / sum(rate(platform_api_requests_total[5m])) * 100",
+        "legendFormat": "Error Rate %"
+      }],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percent",
+          "thresholds": {
+            "steps": [
+              { "color": "green", "value": 0 },
+              { "color": "yellow", "value": 1 },
+              { "color": "red", "value": 5 }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "id": 13,
+      "title": "Auth Events (1h)",
+      "type": "bargauge",
+      "gridPos": { "x": 12, "y": 20, "w": 12, "h": 6 },
+      "targets": [{
+        "expr": "sum(increase(platform_auth_events_total[1h])) by (event_type)",
+        "legendFormat": "{{event_type}}"
+      }]
+    }
+  ],
+  "templating": {
+    "list": [
+      {
+        "name": "tenant_id",
+        "type": "query",
+        "datasource": "${DS_PROMETHEUS}",
+        "query": "label_values(platform_runs_total, tenant_id)",
+        "label": "Tenant"
+      }
+    ]
+  },
+  "annotations": {
+    "list": [
+      {
+        "name": "Deployments",
+        "datasource": "${DS_PROMETHEUS}",
+        "expr": "changes(platform_build_info[5m]) > 0",
+        "titleFormat": "Deployment",
+        "iconColor": "blue"
+      }
+    ]
+  }
+}

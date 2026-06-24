@@ -1,0 +1,53 @@
+# requirements_enterprise.txt
+# ================================================================
+# Enterprise Decision Intelligence Platform — Additional Dependencies
+# Install AFTER base requirements.txt:
+#   pip install -r requirements.txt
+#   pip install -r requirements_enterprise.txt
+#
+# All packages here are OPTIONAL — the platform runs on base requirements.txt
+# alone (with graceful feature degradation for missing packages).
+# ================================================================
+
+# ── Validation & API ──────────────────────────────────────────────────────────
+pydantic>=2.0.0
+pydantic[email]>=2.0.0
+fastapi>=0.104.0
+uvicorn[standard]>=0.24.0
+python-multipart>=0.0.6
+httpx>=0.25.0                    # FastAPI test client + async HTTP
+
+# ── Auth (password hashing) ───────────────────────────────────────────────────
+bcrypt>=4.0.1                    # Production password hashing (PBKDF2 used by default)
+python-jose[cryptography]>=3.3.0 # Alternative JWT backend
+
+# ── Excel export ──────────────────────────────────────────────────────────────
+openpyxl>=3.1.0                  # Multi-sheet XLSX workbook generation
+
+# ── Monitoring ────────────────────────────────────────────────────────────────
+prometheus-client>=0.18.0        # Prometheus metrics exposition
+
+# ── Caching (production) ──────────────────────────────────────────────────────
+redis>=5.0.0                     # Redis distributed cache (TTL cache used by default)
+
+# ── Database (production) ─────────────────────────────────────────────────────
+psycopg2-binary>=2.9.0           # PostgreSQL driver
+sqlalchemy>=2.0.0                # ORM (SQLite used by default via stdlib)
+alembic>=1.12.0                  # Database migrations
+
+# ── Testing ───────────────────────────────────────────────────────────────────
+pytest>=7.4.0
+pytest-cov>=4.1.0
+pytest-timeout>=2.2.0
+pytest-asyncio>=0.21.0
+
+# ── Security scanning (CI) ────────────────────────────────────────────────────
+bandit[toml]>=1.7.0
+safety>=2.3.0
+pip-audit>=2.6.0
+
+# ── Code quality ──────────────────────────────────────────────────────────────
+ruff>=0.1.0
+black>=23.0.0
+mypy>=1.6.0
+types-requests>=2.31.0
