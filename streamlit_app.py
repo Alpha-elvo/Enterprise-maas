@@ -780,10 +780,6 @@ def render_audit_trail() -> None:
         return
 
     # Timeline view
-    st.markdown(
-        f"<div class='section-header'>Event Timeline ({len(entries)} events)</div>",
-        unsafe_allow_html=True,
-    )
 
     severity_color = {"INFO": "#10b981", "WARN": "#f59e0b", "ERROR": "#ef4444"}
 
@@ -800,19 +796,6 @@ def render_audit_trail() -> None:
         if isinstance(data, dict):
             parts = [f"{k}: {v}" for k, v in list(data.items())[:3]]
             detail = "  ·  ".join(parts)
-
-            f"<div style='display:flex;align-items:flex-start;padding:8px 0;"
-            f"border-bottom:1px solid #1e293b;font-size:0.8rem;'>"
-            f"<span class='timeline-dot' style='background:{color};margin-top:4px;'></span>"
-            f"<div>"
-            f"<span style='color:{color};font-weight:700;'>{event}</span>"
-            f"<span style='color:#475569;margin-left:8px;'>{ts}</span>"
-agent_html = f"<span style='color:#6366f1;margin-left:8px;'>{agent}</span>" if agent else ""
-record_html = f"<span style='color:#94a3b8;margin-left:6px;'>{record}</span>" if record else ""
-            f"<div style='color:#64748b;margin-top:2px;'>{detail}</div>"
-            f"</div></div>",
-            unsafe_allow_html=True,
-        )
 
     # Full table
     with st.expander("Full Audit Table"):
