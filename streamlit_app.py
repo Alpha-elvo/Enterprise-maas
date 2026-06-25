@@ -801,7 +801,6 @@ def render_audit_trail() -> None:
             parts = [f"{k}: {v}" for k, v in list(data.items())[:3]]
             detail = "  ·  ".join(parts)
 
-        st.markdown(
             f"<div style='display:flex;align-items:flex-start;padding:8px 0;"
             f"border-bottom:1px solid #1e293b;font-size:0.8rem;'>"
             f"<span class='timeline-dot' style='background:{color};margin-top:4px;'></span>"
