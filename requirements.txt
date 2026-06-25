@@ -1,6 +1,8 @@
 requests
 python-dotenv
 plotly
+pandas
+streamlit
 reportlab
 tenacity
 jsonschema
