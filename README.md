@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 <div align="center">
 
 # 🧠 Enterprise Decision Intelligence Platform
@@ -325,3 +326,6 @@ Apache License 2.0 — see [LICENSE](LICENSE).
 ---
 
 *Built with: Python 3.10+ · Groq · Streamlit · FastAPI · ReportLab · openpyxl · Prometheus*
+=======
+# Enterprise-maas
+>>>>>>> 99192cfe83670959923a70f8a6553dbfdc983885
