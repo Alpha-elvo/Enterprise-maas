@@ -808,8 +808,8 @@ def render_audit_trail() -> None:
             f"<div>"
             f"<span style='color:{color};font-weight:700;'>{event}</span>"
             f"<span style='color:#475569;margin-left:8px;'>{ts}</span>"
-            f"{'<span style=\"color:#6366f1;margin-left:8px;\">' + agent + '</span>' if agent else ''}"
-            f"{'<span style=\"color:#94a3b8;margin-left:6px;\">' + record + '</span>' if record else ''}"
+agent_html = f"<span style='color:#6366f1;margin-left:8px;'>{agent}</span>" if agent else ""
+record_html = f"<span style='color:#94a3b8;margin-left:6px;'>{record}</span>" if record else ""
             f"<div style='color:#64748b;margin-top:2px;'>{detail}</div>"
             f"</div></div>",
             unsafe_allow_html=True,
